@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
@@ -88,13 +89,23 @@ func (apiCfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&user)
 
 	if err != nil {
-		utils.JsonErr(w, 400, "invalid request body")
+		utils.JsonErr(w, 400, []error{errors.New("invalid request body")})
+	}
+
+	isValidPassword := validatePassword(user.Password)
+
+	println(isValidPassword)
+
+	if isValidPassword != nil {
+		utils.JsonErr(w, 400, isValidPassword)
+		return
 	}
 
 	hashedPassword, hashErr := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
 
 	if hashErr != nil {
-		utils.JsonErr(w, 400, "invalid password")
+		utils.JsonErr(w, 500, []error{errors.New("it was not possible to protect your password")})
+		return
 	}
 
 	queryResp := apiCfg.DB.CreateUser(r.Context(), database.CreateUserParams{
@@ -105,11 +116,13 @@ func (apiCfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 	if queryResp != nil {
 
 		println(queryResp.Error())
-		utils.JsonErr(w, 500, "Error creating user")
+		utils.JsonErr(w, 500, []error{errors.New("error creating user")})
+		return
 	}
 	createdUser, err := apiCfg.DB.GetUser(r.Context(), user.Email)
 	if err != nil {
-		utils.JsonErr(w, 500, "User Was created but we were unable to get its info")
+		utils.JsonErr(w, 500, []error{errors.New("user Was created but we were unable to get its info")})
+		return
 	}
 
 	utils.JsonResp(w, 200, defaultResp{
@@ -122,13 +135,50 @@ func (apiCfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func validatePassword(password string) (passwordErrs []error) {
+	if password == "" {
+		passwordErrs = append(passwordErrs, errors.New("password must not be empty"))
+		return passwordErrs
+	}
+	if len(password) < 6 {
+		passwordErrs = append(passwordErrs, errors.New("password must have at least 6 characters"))
+		return passwordErrs
+	} else if len(password) > 120 {
+		passwordErrs = append(passwordErrs, errors.New("password must have at maximum 120 characters"))
+		return passwordErrs
+	}
+
+	containsSpecialChars := regexp.MustCompile("[^a-zA-Z0-9]").MatchString(password)
+	containsUpperCase := regexp.MustCompile("[A-Z]").MatchString(password)
+	containsLowerCase := regexp.MustCompile("[a-z]").MatchString(password)
+	containsNumber := regexp.MustCompile("[0-9]+").MatchString(password)
+
+	if !containsNumber {
+		passwordErrs = append(passwordErrs, errors.New("password must have a number character"))
+	}
+	if !containsLowerCase {
+		passwordErrs = append(passwordErrs, errors.New("password must have a lowercase character"))
+	}
+	if !containsUpperCase {
+		passwordErrs = append(passwordErrs, errors.New("password must have a uppercase character"))
+	}
+	if !containsSpecialChars {
+		passwordErrs = append(passwordErrs, errors.New("password must have a special character"))
+	}
+	if !containsLowerCase || !containsSpecialChars || !containsUpperCase || !containsNumber {
+		return passwordErrs
+	}
+
+	return nil
+}
+
 func (apiCfg *apiConfig) loginUser(w http.ResponseWriter, r *http.Request) {
 	user := userParams{}
 
 	err := json.NewDecoder(r.Body).Decode(&user)
 
 	if err != nil {
-		utils.JsonErr(w, 400, "invalid request")
+		utils.JsonErr(w, 400, []error{errors.New("invalid request")})
 	}
 
 	queryResp, err := apiCfg.DB.GetUser(r.Context(), user.Email)
@@ -136,12 +186,12 @@ func (apiCfg *apiConfig) loginUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		println(queryResp.Password)
 		println(err.Error())
-		utils.JsonErr(w, 400, err.Error())
+		utils.JsonErr(w, 400, []error{errors.New(err.Error())})
 	}
 
 	passwordErr := bcrypt.CompareHashAndPassword([]byte(queryResp.Password), []byte(user.Password))
 	if passwordErr != nil {
-		utils.JsonErr(w, 400, "Password is not valid")
+		utils.JsonErr(w, 400, []error{errors.New("password is not valid")})
 	}
 
 	utils.JsonResp(w, 200, defaultResp{

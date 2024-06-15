@@ -10,6 +10,7 @@ func JsonResp(w http.ResponseWriter, statusCode int, payload interface{}) {
 
 	if err != nil {
 		w.WriteHeader(500)
+		w.Write([]byte("Error converting data to JSON."))
 		return
 	}
 
@@ -19,14 +20,23 @@ func JsonResp(w http.ResponseWriter, statusCode int, payload interface{}) {
 	w.Write(dat)
 }
 
-func JsonErr(w http.ResponseWriter, statusCode int, errMsg string) {
-
-	println("Doasdoaskd")
-
+func JsonErr(w http.ResponseWriter, statusCode int, errMsg []error) {
 	type errResponse struct {
-		Error string `json:"error"`
+		Error []string `json:"error"`
 	}
+
+	stringErrs := errorsToString(errMsg)
 	JsonResp(w, statusCode, errResponse{
-		Error: errMsg,
+		Error: stringErrs,
 	})
+}
+
+func errorsToString(errorsToConvert []error) []string {
+	stringErrors := []string{}
+
+	for _, error := range errorsToConvert {
+		stringErrors = append(stringErrors, error.Error())
+	}
+
+	return stringErrors
 }
