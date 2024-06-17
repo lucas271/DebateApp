@@ -90,6 +90,7 @@ func (apiCfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		utils.JsonErr(w, 400, []error{errors.New("invalid request body")})
+		return
 	}
 
 	isValidPassword := validatePassword(user.Password)
@@ -98,6 +99,16 @@ func (apiCfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 
 	if isValidPassword != nil {
 		utils.JsonErr(w, 400, isValidPassword)
+		return
+	}
+
+	isUser, err := apiCfg.DB.GetUser(r.Context(), user.Email)
+
+	if isUser.Email == user.Email {
+		utils.JsonErr(w, 400, []error{errors.New("email already registered")})
+		return
+	} else if isUser.Name == user.Name {
+		utils.JsonErr(w, 400, []error{errors.New("name already registered")})
 		return
 	}
 
