@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/lucas271/DebateApp/internal/database"
@@ -28,13 +29,14 @@ type userParams struct {
 }
 
 type defaultResp struct {
-	response  any
-	isSuccess bool
+	Response  any  `json:"response"`
+	IsSuccess bool `json:"isSuccess"`
 }
 
 type userResp struct {
-	email string
-	name  string
+	Email string    `json:"email"`
+	Name  string    `json:"name"`
+	ID    uuid.UUID `json:"id"`
 }
 
 func main() {
@@ -95,8 +97,8 @@ func connectToDB() (apiCfg apiConfig, err error) {
 }
 func (apiCfg *apiConfig) test(w http.ResponseWriter, r *http.Request) {
 	utils.JsonResp(w, 200, defaultResp{
-		response:  "it worked",
-		isSuccess: true,
+		Response:  "it worked",
+		IsSuccess: true,
 	})
 }
 
@@ -121,9 +123,14 @@ func (apiCfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 	isUser, err := apiCfg.DB.GetUser(r.Context(), user.Email)
 
 	if err != nil {
-		utils.JsonErr(w, 400, []error{errors.New("could not check user")})
-		return
+		if err == sql.ErrNoRows {
+			err = nil
+		} else {
+			utils.JsonErr(w, 400, []error{errors.New("could not check user")})
+			return
+		}
 	}
+
 	if isUser.Email == user.Email {
 		utils.JsonErr(w, 400, []error{errors.New("email already registered")})
 		return
@@ -136,29 +143,25 @@ func (apiCfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	queryResp := apiCfg.DB.CreateUser(r.Context(), database.CreateUserParams{
+	queryResp, err := apiCfg.DB.CreateUser(r.Context(), database.CreateUserParams{
 		Name:     user.Name,
 		Email:    user.Email,
 		Password: string(hashedPassword),
 	})
-	if queryResp != nil {
-
-		println(queryResp.Error())
-		utils.JsonErr(w, 500, []error{errors.New("error creating user")})
-		return
-	}
-	createdUser, err := apiCfg.DB.GetUser(r.Context(), user.Email)
 	if err != nil {
-		utils.JsonErr(w, 500, []error{errors.New("user Was created but we were unable to get its info")})
+
+		println(err.Error())
+		utils.JsonErr(w, 500, []error{errors.New("error creating user")})
 		return
 	}
 
 	utils.JsonResp(w, 200, defaultResp{
-		response: userResp{
-			email: createdUser.Email,
-			name:  createdUser.Name,
+		Response: userResp{
+			Email: queryResp.Email,
+			Name:  queryResp.Name,
+			ID:    queryResp.ID,
 		},
-		isSuccess: true,
+		IsSuccess: true,
 	})
 }
 
@@ -229,10 +232,11 @@ func (apiCfg *apiConfig) loginUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.JsonResp(w, 200, defaultResp{
-		response: userResp{
-			email: queryResp.Email,
-			name:  queryResp.Name,
+		Response: userResp{
+			Email: queryResp.Email,
+			Name:  queryResp.Name,
+			ID:    queryResp.ID,
 		},
-		isSuccess: true,
+		IsSuccess: true,
 	})
 }

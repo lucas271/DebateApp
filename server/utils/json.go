@@ -7,16 +7,14 @@ import (
 )
 
 func JsonResp(w http.ResponseWriter, statusCode int, payload interface{}) {
+
 	dat, err := json.Marshal(payload)
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write([]byte("Error converting data to JSON."))
 		return
 	}
-
 	w.Header().Add("Content-Type", "application/json")
-
-	fmt.Printf("%s", dat)
 	w.WriteHeader(statusCode)
 
 	w.Write(dat)
