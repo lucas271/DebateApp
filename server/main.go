@@ -9,10 +9,11 @@ import (
 	"os"
 	"regexp"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 	"github.com/lucas271/DebateApp/internal/database"
 	"github.com/lucas271/DebateApp/utils"
+	"github.com/rs/cors"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -34,7 +35,6 @@ type defaultResp struct {
 type userResp struct {
 	email string
 	name  string
-	id    string
 }
 
 func main() {
@@ -47,16 +47,27 @@ func main() {
 	}
 
 	apiCfg, err := connectToDB()
+	mux := http.NewServeMux()
 
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	http.HandleFunc("POST /createUser", apiCfg.createUser)
-	http.HandleFunc("POST /loginUser", apiCfg.loginUser)
+	mux.HandleFunc("POST /createUser", apiCfg.createUser)
+	mux.HandleFunc("POST /loginUser", apiCfg.loginUser)
+	mux.HandleFunc("GET /test", apiCfg.test)
 
-	if err := http.ListenAndServe(":37650", nil); err != nil {
-		fmt.Println(err.Error())
+	corsRules := cors.New(cors.Options{
+		AllowedOrigins: []string{
+			"http://localhost:5173",
+		},
+		AllowCredentials: true,
+	})
+
+	handler := corsRules.Handler(mux)
+
+	if err := http.ListenAndServe(":37650", handler); err != nil {
+		fmt.Printf("%s", err.Error())
 	}
 }
 
@@ -67,12 +78,13 @@ func connectToDB() (apiCfg apiConfig, err error) {
 		return apiConfig{}, errors.New("empty database URL")
 	}
 
-	conn, err := sql.Open("mysql", os.Getenv("DB_URL"))
+	conn, err := sql.Open("postgres", os.Getenv("DB_URL"))
 
 	if err != nil {
 		return apiConfig{}, errors.New(err.Error())
 	}
 
+	println(conn)
 	queries := database.New(conn)
 
 	apiCfg = apiConfig{
@@ -80,6 +92,12 @@ func connectToDB() (apiCfg apiConfig, err error) {
 	}
 
 	return apiCfg, err
+}
+func (apiCfg *apiConfig) test(w http.ResponseWriter, r *http.Request) {
+	utils.JsonResp(w, 200, defaultResp{
+		response:  "it worked",
+		isSuccess: true,
+	})
 }
 
 func (apiCfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
@@ -95,8 +113,6 @@ func (apiCfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 
 	isValidPassword := validatePassword(user.Password)
 
-	println(isValidPassword)
-
 	if isValidPassword != nil {
 		utils.JsonErr(w, 400, isValidPassword)
 		return
@@ -104,11 +120,12 @@ func (apiCfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 
 	isUser, err := apiCfg.DB.GetUser(r.Context(), user.Email)
 
+	if err != nil {
+		utils.JsonErr(w, 400, []error{errors.New("could not check user")})
+		return
+	}
 	if isUser.Email == user.Email {
 		utils.JsonErr(w, 400, []error{errors.New("email already registered")})
-		return
-	} else if isUser.Name == user.Name {
-		utils.JsonErr(w, 400, []error{errors.New("name already registered")})
 		return
 	}
 
@@ -140,7 +157,6 @@ func (apiCfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 		response: userResp{
 			email: createdUser.Email,
 			name:  createdUser.Name,
-			id:    createdUser.ID,
 		},
 		isSuccess: true,
 	})
@@ -190,26 +206,32 @@ func (apiCfg *apiConfig) loginUser(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		utils.JsonErr(w, 400, []error{errors.New("invalid request")})
+		return
 	}
 
+	isValidPass := validatePassword(user.Password)
+
+	if isValidPass != nil {
+		utils.JsonErr(w, 400, isValidPass)
+		return
+	}
 	queryResp, err := apiCfg.DB.GetUser(r.Context(), user.Email)
 
 	if err != nil {
-		println(queryResp.Password)
-		println(err.Error())
 		utils.JsonErr(w, 400, []error{errors.New(err.Error())})
+		return
 	}
 
 	passwordErr := bcrypt.CompareHashAndPassword([]byte(queryResp.Password), []byte(user.Password))
 	if passwordErr != nil {
 		utils.JsonErr(w, 400, []error{errors.New("password is not valid")})
+		return
 	}
 
 	utils.JsonResp(w, 200, defaultResp{
 		response: userResp{
 			email: queryResp.Email,
 			name:  queryResp.Name,
-			id:    queryResp.ID,
 		},
 		isSuccess: true,
 	})

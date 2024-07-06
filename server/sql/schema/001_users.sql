@@ -1,11 +1,11 @@
 -- +goose Up
 create table users(
-    id varchar(200) primary key default(uuid()),
+    id UUID primary key,
     name varchar(60) not null UNIQUE,
     email varchar(120) not null UNIQUE,
     password varchar(60) not null,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    updated_at timestamp with time zone NOT NULL DEFAULT now()
 );
 
 -- +goose Down

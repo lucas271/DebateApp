@@ -2,12 +2,12 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
 func JsonResp(w http.ResponseWriter, statusCode int, payload interface{}) {
 	dat, err := json.Marshal(payload)
-
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write([]byte("Error converting data to JSON."))
@@ -16,16 +16,20 @@ func JsonResp(w http.ResponseWriter, statusCode int, payload interface{}) {
 
 	w.Header().Add("Content-Type", "application/json")
 
+	fmt.Printf("%s", dat)
 	w.WriteHeader(statusCode)
+
 	w.Write(dat)
 }
 
 func JsonErr(w http.ResponseWriter, statusCode int, errMsg []error) {
+
 	type errResponse struct {
-		Error []string `json:"error"`
+		Error []string `json:"errors"`
 	}
 
 	stringErrs := errorsToString(errMsg)
+	fmt.Printf("%#v\n", stringErrs)
 	JsonResp(w, statusCode, errResponse{
 		Error: stringErrs,
 	})

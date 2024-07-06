@@ -10,7 +10,7 @@ import (
 )
 
 const createUser = `-- name: CreateUser :exec
-INSERT INTO users(name, email, password)values(?, ?, ?)
+INSERT INTO users(name, email, password)values($1, $2, $3)
 `
 
 type CreateUserParams struct {
