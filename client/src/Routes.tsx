@@ -1,5 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Navbar from './components/layout/Navbar'
 import HomePage from './pages/HomePage'
 import SignUp from './pages/SignUp'
@@ -42,6 +41,7 @@ const WithSidebar = () => {
 
 
 const RoutesComponent = () => {
+
     return <>
         <Router>
             <Navbar/>

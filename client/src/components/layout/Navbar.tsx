@@ -12,10 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Menu from '@mui/material/Menu';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import { Badge, DialogActions, DialogContent, DialogContentText, FormControl, FormHelperText, Paper, TextField } from '@mui/material';
-import { Label, LabelSharp } from '@mui/icons-material';
+import { Badge} from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import SignInDialog from '../signInDialog';
 
@@ -88,6 +85,7 @@ const Search = styled('div')(({ theme } : {theme: any}) => ({
     React.useEffect(() => {
       setShowSignIn(false)
     }, [location])
+
 
     return (
       <Box sx={{ flexGrow: 1 }} component={"header"}>
