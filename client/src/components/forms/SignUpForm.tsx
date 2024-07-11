@@ -6,58 +6,30 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import PasswordField from "../shared/PasswordField";
+import { authApi, useSignUpUserMutation } from "../../lib/services/reducers/userReducer";
 
 
-export default function SignUpForm({setIsSuccess}: {setIsSuccess: React.Dispatch<React.SetStateAction<boolean>>}){
+export default function SignUpForm(){
     const { register, handleSubmit, formState: { errors } } = useForm<SignUpType>({
       resolver: zodResolver(signUpValidation)
     });
-    const [apiErrors, setApiErrors] = useState<string[]>([])
-    const [loading, setLoading] = useState<boolean>(false)
-  
+    const [signUp, {isLoading, error: apiErrors}] = useSignUpUserMutation({
+      fixedCacheKey: "signUp:main"
+    })
     const onSubmit = async (data: SignUpType) => {
-      setApiErrors([])
-      setLoading(true)
-      const response: {errors: string[]} | any = await axios.post("http://localhost:37650/createUser", {
-        ...data
-      }, {
-        headers: {
-          "Content-Type": "application/json",
-        }
-      }).then(res => {
-        return res.data.response
-      }).catch((res) => {
-        apiErrors.push("Api error")
-        setIsSuccess(false)
-        setLoading(false)
-        return res.response.data
-      })
-
-      if(response?.errors) {
-        setLoading(false)
-        setApiErrors(response.errors)
-        return
-      }else if(!response) {
-        setLoading(false)
-        setIsSuccess(false)
-        setApiErrors(["error getting user info"])
-        return
-      }
-
-      setIsSuccess(true)
-      setLoading(false)
+      signUp(data)
     };
     return <Container maxWidth="xl" className='h-minus-nav flex items-center justify-center overflow-hidden relative'>
       {
-        loading ? <> 
-            <div className={`w-full h-full items-center justify-center my-auto ${loading ? 'flex' : 'hidden'}`}>
+        isLoading ? <> 
+            <div className={`w-full h-full items-center justify-center my-auto flex`}>
             <CircularProgress/>
             </div>
         </> :
         <>
             <h2 className="text-2xl mb-6 font-semibold">Sign Up</h2>
             <form className="flex gap-4 flex-col " onSubmit={handleSubmit(onSubmit)}>
-                {apiErrors.length > 0 && apiErrors.map((error, index) => {
+                {Array.isArray(apiErrors) && apiErrors.map((error, index) => {
                     return <div key={index} className="bg-red-700 text-slate-200 rounded-xl mx-auto text-center p-4">
                     <p>{error}</p>
                     </div>
