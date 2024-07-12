@@ -14,7 +14,7 @@ export default function SignUpForm(){
       resolver: zodResolver(signUpValidation)
     });
     const [signUp, {isLoading, error: apiErrors}] = useSignUpUserMutation({
-      fixedCacheKey: "user:main"
+      fixedCacheKey: "user:signUp"
     })
     const onSubmit = async (data: SignUpType) => {
       signUp(data)

@@ -12,7 +12,7 @@ export default function SignInForm(){
     });
 
     const [loginUser, {isLoading, data, error: apiErrors}] = useLoginUserMutation({
-        fixedCacheKey: "user:main"
+        fixedCacheKey: "user:login"
     })
     const onSubmit = async (data: SignInType): Promise<void> => {
         await loginUser(data)

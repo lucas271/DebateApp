@@ -15,7 +15,7 @@ import Button from '@mui/material/Button';
 import { Badge} from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import SignInDialog from '../signInDialog';
-import { useGetUserQuery } from '../../lib/services/reducers/userReducer';
+import { useGetAllUsersQuery } from '../../lib/services/reducers/userReducer';
 
 
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -66,9 +66,11 @@ const Search = styled('div')(({ theme } : {theme: any}) => ({
   export default function Navbar() {
     const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
     const [showSignIn, setShowSignIn] = React.useState<boolean>(false);
-    const user = true;
+    const user = false;
     const location = useLocation()
-    const {data} = useGetUserQuery({})
+    const {isLoading, error, data} = useGetAllUsersQuery({
+      fixedCacheKey: "user:main"
+    })
 
     const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
       setAnchorElUser(event.currentTarget);
@@ -80,7 +82,9 @@ const Search = styled('div')(({ theme } : {theme: any}) => ({
 
     React.useEffect(() => {
       setShowSignIn(false)
+      console.log(isLoading, error, data)
     }, [location])
+
 
 
     return (
@@ -94,7 +98,7 @@ const Search = styled('div')(({ theme } : {theme: any}) => ({
               component="h6"
               sx={{ display: { xs: 'none', sm: 'block' } }}
             >
-              <Link to="/">LOGO</Link>
+              <Link to="/">{String(isLoading)}</Link>
             </Typography>
             <Box className="flex gap-2">
               <Typography
@@ -102,7 +106,6 @@ const Search = styled('div')(({ theme } : {theme: any}) => ({
                 component="p"
                 sx={{ display: { xs: 'none', sm: 'block' } }}
               >
-                Topics
               </Typography>
               <Typography
                 noWrap

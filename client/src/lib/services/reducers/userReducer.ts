@@ -1,10 +1,11 @@
+import { AnyListenerPredicate } from "@reduxjs/toolkit";
 import { SignInType, SignUpType } from "../../../types/auth";
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 export const authApi = createApi({
     reducerPath: 'auth',
     baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:37650' }), // Replace with your actual API base URL
-    tagTypes: ["Login"],
+    tagTypes: ["auth"],
     endpoints: (builder) => ({
       loginUser: builder.mutation<SignInType, SignInType>({
         query: (credentials) => ({
@@ -18,6 +19,7 @@ export const authApi = createApi({
           localStorage.setItem('user', JSON.stringify(response.response));
           return response.response;
         },
+        invalidatesTags: [{ type: 'auth', id: 'main' }],
         transformErrorResponse: (error: any) => {
           if(!error?.data?.errors) return ["Unknown Error"]
           return error?.data?.errors
@@ -36,20 +38,23 @@ export const authApi = createApi({
           localStorage.setItem('user', JSON.stringify(response.response));
           return response.response;
         },
+        invalidatesTags: [{ type: 'auth', id: 'main' }],
         transformErrorResponse: (error: any) => {
           if(!error?.data?.errors) return ["Unknown Error"]
 
           return error?.data?.errors
         },
       }),
-      getUser: builder.query<any, any>({
+      getAllUsers: builder.query<any, any>({
         query: (credentials) => ({
-          url: '/checkValidUserTokens',
+          url: '/getAllUsers',
           method: 'get',
-          body: JSON.stringify(credentials),
-          headers: { 'Content-Type': 'application/json' },
+          query: JSON.stringify(credentials),
+          headers: { 'Content-Type': 'application/json'},
         }),
+        providesTags: [{ type: 'auth', id: 'main' }],
         transformResponse: async (response: any, error: any) => {
+          console.log(response, " doakspdlaspldpasl")
           if (!response) throw new Error;
 
           return response.response;
@@ -63,4 +68,4 @@ export const authApi = createApi({
     }),
 });
 
-export const {useLoginUserMutation, useSignUpUserMutation,  useGetUserQuery} = authApi
+export const {useLoginUserMutation, useSignUpUserMutation,  useGetAllUsersQuery} = authApi

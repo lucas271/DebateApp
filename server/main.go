@@ -49,13 +49,7 @@ func main() {
 		return
 	}
 
-	apiCfg, err := connectToDB()
-	mux := mux.NewRouter()
-	if err != nil {
-		return
-	}
 	//AUTH RULES
-	CSRF := csrf.Protect([]byte("32-byte-long-auth-key"), csrf.Secure(false), csrf.ErrorHandler(http.HandlerFunc(handleCsrfError))) // csrf must only be false in developing enviroment
 	corsRules := cors.New(cors.Options{
 		AllowedOrigins: []string{
 			"http://localhost:5173",
@@ -63,18 +57,26 @@ func main() {
 		AllowCredentials: true,
 	})
 
-	mux.Use(CSRF)
-	mux.Use(corsRules.Handler)
 	//ROUTES
-	mux.HandleFunc("POST /createUser", apiCfg.createUser)
-	mux.HandleFunc("POST /loginUser", apiCfg.loginUser)
-	mux.HandleFunc("GET /test", apiCfg.test)
+	mux := mux.NewRouter()
+	apiCfg, err := connectToDB()
+	if err != nil {
+		return
+	}
 
-	if err := http.ListenAndServe(":37650", mux); err != nil {
+	mux.HandleFunc("/createUser", apiCfg.createUser).Methods("POST")
+	mux.HandleFunc("/loginUser", apiCfg.loginUser).Methods("POST")
+	mux.HandleFunc("/getAllUsers", apiCfg.getAllUsers).Methods("GET")
+
+	CSRF := csrf.Protect([]byte("32-byte-long-auth-key"), csrf.Secure(false), csrf.ErrorHandler(http.HandlerFunc(handleCsrfError)))
+
+	settedApi := corsRules.Handler(CSRF(mux))
+
+	if err := http.ListenAndServe(":37650", settedApi); err != nil {
 		fmt.Printf("%s", err.Error())
 	}
 }
-func handleCsrfError(w http.ResponseWriter, r *http.Request) {
+func handleCsrfError(w http.ResponseWriter, _r *http.Request) {
 	utils.JsonErr(w, 403, []error{errors.New("reinicie a pagina e tente novamente, ERRO de seguranca")})
 
 }
@@ -92,7 +94,6 @@ func connectToDB() (apiCfg apiConfig, err error) {
 		return apiConfig{}, errors.New(err.Error())
 	}
 
-	println(conn)
 	queries := database.New(conn)
 
 	apiCfg = apiConfig{
@@ -101,16 +102,20 @@ func connectToDB() (apiCfg apiConfig, err error) {
 
 	return apiCfg, err
 }
-func (apiCfg *apiConfig) test(w http.ResponseWriter, r *http.Request) {
+func (apiCfg *apiConfig) getAllUsers(w http.ResponseWriter, r *http.Request) {
+	queries := r.URL.Query()
+	fmt.Printf("%v", queries)
+
+	queryResp, _ := apiCfg.DB.GetAllUsers(r.Context())
+
 	utils.JsonResp(w, 200, defaultResp{
-		Response:  "it worked",
+		Response:  queryResp,
 		IsSuccess: true,
 	})
 }
 
 func (apiCfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 	//get info here
-
 	user := userParams{}
 	err := json.NewDecoder(r.Body).Decode(&user)
 
