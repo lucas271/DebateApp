@@ -10,6 +10,8 @@ import (
 	"regexp"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/csrf"
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/lucas271/DebateApp/internal/database"
@@ -40,7 +42,6 @@ type userResp struct {
 }
 
 func main() {
-	//load dotenv
 	err := godotenv.Load(".env")
 
 	if err != nil {
@@ -49,16 +50,12 @@ func main() {
 	}
 
 	apiCfg, err := connectToDB()
-	mux := http.NewServeMux()
-
+	mux := mux.NewRouter()
 	if err != nil {
-		fmt.Println(err.Error())
 		return
 	}
-	mux.HandleFunc("POST /createUser", apiCfg.createUser)
-	mux.HandleFunc("POST /loginUser", apiCfg.loginUser)
-	mux.HandleFunc("GET /test", apiCfg.test)
-
+	//AUTH RULES
+	CSRF := csrf.Protect([]byte("32-byte-long-auth-key"), csrf.Secure(false), csrf.ErrorHandler(http.HandlerFunc(handleCsrfError))) // csrf must only be false in developing enviroment
 	corsRules := cors.New(cors.Options{
 		AllowedOrigins: []string{
 			"http://localhost:5173",
@@ -66,11 +63,20 @@ func main() {
 		AllowCredentials: true,
 	})
 
-	handler := corsRules.Handler(mux)
+	mux.Use(CSRF)
+	mux.Use(corsRules.Handler)
+	//ROUTES
+	mux.HandleFunc("POST /createUser", apiCfg.createUser)
+	mux.HandleFunc("POST /loginUser", apiCfg.loginUser)
+	mux.HandleFunc("GET /test", apiCfg.test)
 
-	if err := http.ListenAndServe(":37650", handler); err != nil {
+	if err := http.ListenAndServe(":37650", mux); err != nil {
 		fmt.Printf("%s", err.Error())
 	}
+}
+func handleCsrfError(w http.ResponseWriter, r *http.Request) {
+	utils.JsonErr(w, 403, []error{errors.New("reinicie a pagina e tente novamente, ERRO de seguranca")})
+
 }
 
 func connectToDB() (apiCfg apiConfig, err error) {

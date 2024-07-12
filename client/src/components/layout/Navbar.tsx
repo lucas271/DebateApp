@@ -15,6 +15,7 @@ import Button from '@mui/material/Button';
 import { Badge} from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import SignInDialog from '../signInDialog';
+import { useGetUserQuery } from '../../lib/services/reducers/userReducer';
 
 
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -65,9 +66,9 @@ const Search = styled('div')(({ theme } : {theme: any}) => ({
   export default function Navbar() {
     const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
     const [showSignIn, setShowSignIn] = React.useState<boolean>(false);
-    const user = false;
+    const user = true;
     const location = useLocation()
-
+    const {data} = useGetUserQuery({})
 
     const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
       setAnchorElUser(event.currentTarget);
@@ -76,11 +77,6 @@ const Search = styled('div')(({ theme } : {theme: any}) => ({
     const handleCloseUserMenu = () => {
       setAnchorElUser(null);
     };
-
-    const handleShowSignIn = () => {
-      setShowSignIn(!showSignIn)
-    }
-
 
     React.useEffect(() => {
       setShowSignIn(false)
@@ -95,32 +91,29 @@ const Search = styled('div')(({ theme } : {theme: any}) => ({
             <Typography
               variant="h6"
               noWrap
-              component="div"
+              component="h6"
               sx={{ display: { xs: 'none', sm: 'block' } }}
             >
               <Link to="/">LOGO</Link>
             </Typography>
             <Box className="flex gap-2">
               <Typography
-                variant=" h6"
                 noWrap
-                component="div"
+                component="p"
                 sx={{ display: { xs: 'none', sm: 'block' } }}
               >
                 Topics
               </Typography>
               <Typography
-                variant="p"
                 noWrap
-                component="div"
+                component="p"
                 sx={{ display: { xs: 'none', sm: 'block' } }}
               >
                 News
               </Typography>
               <Typography
-                variant="p"
                 noWrap
-                component="div"
+                component="p"
                 sx={{ display: { xs: 'none', sm: 'block' } }}
               >
                 Pools
@@ -151,7 +144,7 @@ const Search = styled('div')(({ theme } : {theme: any}) => ({
                   </Button>
                   <SignInDialog showSignIn={showSignIn} setShowSignIn={setShowSignIn}/>
                 </>
-}
+                }
                 <Menu
                 sx={{ mt: '45px' }}
                 id="menu-appbar"

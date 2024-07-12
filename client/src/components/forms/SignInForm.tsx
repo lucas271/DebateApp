@@ -1,9 +1,7 @@
 import { Button, CircularProgress, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material"
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom"
 import { SignInType, signInValidation } from "../../types/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
 import { useForm } from "react-hook-form";
 import PasswordField from "../shared/PasswordField";
 import { useLoginUserMutation } from "../../lib/services/reducers/userReducer";
@@ -14,7 +12,7 @@ export default function SignInForm(){
     });
 
     const [loginUser, {isLoading, data, error: apiErrors}] = useLoginUserMutation({
-        fixedCacheKey: "login:main"
+        fixedCacheKey: "user:main"
     })
     const onSubmit = async (data: SignInType): Promise<void> => {
         await loginUser(data)

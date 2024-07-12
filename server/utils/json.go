@@ -2,7 +2,6 @@ package utils
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -14,6 +13,7 @@ func JsonResp(w http.ResponseWriter, statusCode int, payload interface{}) {
 		w.Write([]byte("Error converting data to JSON."))
 		return
 	}
+
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
@@ -27,7 +27,6 @@ func JsonErr(w http.ResponseWriter, statusCode int, errMsg []error) {
 	}
 
 	stringErrs := errorsToString(errMsg)
-	fmt.Printf("%#v\n", stringErrs)
 	JsonResp(w, statusCode, errResponse{
 		Error: stringErrs,
 	})

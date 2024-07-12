@@ -11,3 +11,10 @@ require (
 require github.com/lib/pq v1.10.9
 
 require github.com/rs/cors v1.11.0
+
+require (
+	github.com/gorilla/csrf v1.7.2
+	github.com/gorilla/securecookie v1.1.2
+)
+
+require github.com/gorilla/mux v1.8.1

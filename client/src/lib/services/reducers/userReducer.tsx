@@ -42,7 +42,25 @@ export const authApi = createApi({
           return error?.data?.errors
         },
       }),
+      getUser: builder.query<any, any>({
+        query: (credentials) => ({
+          url: '/checkValidUserTokens',
+          method: 'get',
+          body: JSON.stringify(credentials),
+          headers: { 'Content-Type': 'application/json' },
+        }),
+        transformResponse: async (response: any, error: any) => {
+          if (!response) throw new Error;
+
+          return response.response;
+        },
+        transformErrorResponse: (error: any) => {
+          if(!error?.data?.errors) return ["Unknown Error"]
+
+          return error?.data?.errors
+        },
+      })
     }),
 });
 
-export const {useLoginUserMutation, useSignUpUserMutation} = authApi
+export const {useLoginUserMutation, useSignUpUserMutation,  useGetUserQuery} = authApi

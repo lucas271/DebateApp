@@ -5,7 +5,7 @@ import { useSignUpUserMutation } from "../lib/services/reducers/userReducer";
 
 export default function SignUp(){
   const [_, {isSuccess}] = useSignUpUserMutation({
-    fixedCacheKey: "signUp:main"
+    fixedCacheKey: "user:main"
   })
   return <>
     <Container maxWidth="xl" className='h-minus-nav flex items-center justify-center overflow-hidden relative'>
