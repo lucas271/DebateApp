@@ -2,6 +2,9 @@ import { AnyListenerPredicate } from "@reduxjs/toolkit";
 import { SignInType, SignUpType } from "../../../types/auth";
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
+
+const csrf = localStorage.getItem("csrf")
+
 export const authApi = createApi({
     reducerPath: 'auth',
     baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:37650' }), // Replace with your actual API base URL
@@ -12,7 +15,7 @@ export const authApi = createApi({
           url: '/loginUser',
           method: 'POST',
           body: JSON.stringify(credentials),
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', "Access-Control-Allow-Origin": "*" , "X-CSRF-Token": csrf && JSON.parse(csrf).response || ''},
         }),
         transformResponse: async (response: any, error: any) => {
           if (!response) throw new Error;
@@ -21,6 +24,7 @@ export const authApi = createApi({
         },
         invalidatesTags: [{ type: 'auth', id: 'main' }],
         transformErrorResponse: (error: any) => {
+
           if(!error?.data?.errors) return ["Unknown Error"]
           return error?.data?.errors
         },
@@ -54,7 +58,6 @@ export const authApi = createApi({
         }),
         providesTags: [{ type: 'auth', id: 'main' }],
         transformResponse: async (response: any, error: any) => {
-          console.log(response, " doakspdlaspldpasl")
           if (!response) throw new Error;
 
           return response.response;

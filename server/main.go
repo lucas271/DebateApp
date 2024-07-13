@@ -63,16 +63,20 @@ func main() {
 	if err != nil {
 		return
 	}
-
+	mux.Use(corsRules.Handler)
 	mux.HandleFunc("/createUser", apiCfg.createUser).Methods("POST")
 	mux.HandleFunc("/loginUser", apiCfg.loginUser).Methods("POST")
 	mux.HandleFunc("/getAllUsers", apiCfg.getAllUsers).Methods("GET")
+	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+		utils.JsonResp(w, 200, defaultResp{
+			Response:  csrf.Token(r),
+			IsSuccess: true,
+		})
+	})
 
-	CSRF := csrf.Protect([]byte("32-byte-long-auth-key"), csrf.Secure(false), csrf.ErrorHandler(http.HandlerFunc(handleCsrfError)))
-
-	settedApi := corsRules.Handler(CSRF(mux))
-
-	if err := http.ListenAndServe(":37650", settedApi); err != nil {
+	CSRF := csrf.Protect([]byte("32-byte-long-auth-key"), csrf.ErrorHandler(http.HandlerFunc(handleCsrfError)), csrf.TrustedOrigins([]string{"http://localhost:5173"}))
+	println(CSRF)
+	if err := http.ListenAndServe(":37650", mux); err != nil {
 		fmt.Printf("%s", err.Error())
 	}
 }

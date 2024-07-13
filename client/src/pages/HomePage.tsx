@@ -2,6 +2,7 @@ import { Button, Container } from "@mui/material";
 import RelevantNews from "../components/shared/RelevantNews";
 import { Suspense, useEffect, useState } from "react";
 import { Api } from "@mui/icons-material";
+import axios from "axios";
 
 
 function ApiRequest(){
@@ -9,9 +10,10 @@ function ApiRequest(){
 
 
   useEffect(() => {
-    const response = async () => await fetch("http://localhost:37650/test", {
-      method: "GET"
-    }).then(res => res).catch(res => res)
+    const response = async () => await axios.get("http://localhost:37650/test", {
+    }).then(res => {
+      localStorage.setItem("csrf", JSON.stringify(res.data))
+    }).catch(res => res)
 
     response().then((res) => setFetchResponse(res))
   }, [])
