@@ -11,8 +11,9 @@ function ApiRequest(){
 
   useEffect(() => {
     const response = async () => await axios.get("http://localhost:37650/test", {
+      withCredentials: true,
     }).then(res => {
-      localStorage.setItem("csrf", JSON.stringify(res.data))
+      localStorage.setItem("X-CSRF-Token", res.data.response)
     }).catch(res => res)
 
     response().then((res) => setFetchResponse(res))

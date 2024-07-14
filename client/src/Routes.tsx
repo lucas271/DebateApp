@@ -41,7 +41,6 @@ const WithSidebar = () => {
 
 
 const RoutesComponent = () => {
-
     return <>
         <Router>
             <Navbar/>
@@ -51,6 +50,7 @@ const RoutesComponent = () => {
                         <SignUp/>
                     </main>
                 }/>
+
                 <Route path='*' element={<WithSidebar/>}/>
             </Routes>
             <Footer/>

@@ -3,7 +3,6 @@ import { SignInType, SignUpType } from "../../../types/auth";
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 
-const csrf = localStorage.getItem("csrf")
 
 export const authApi = createApi({
     reducerPath: 'auth',
@@ -15,7 +14,7 @@ export const authApi = createApi({
           url: '/loginUser',
           method: 'POST',
           body: JSON.stringify(credentials),
-          headers: { 'Content-Type': 'application/json', "Access-Control-Allow-Origin": "*" , "X-CSRF-Token": csrf && JSON.parse(csrf).response || ''},
+          headers: { 'Content-Type': 'application/json'},
         }),
         transformResponse: async (response: any, error: any) => {
           if (!response) throw new Error;
@@ -24,7 +23,6 @@ export const authApi = createApi({
         },
         invalidatesTags: [{ type: 'auth', id: 'main' }],
         transformErrorResponse: (error: any) => {
-
           if(!error?.data?.errors) return ["Unknown Error"]
           return error?.data?.errors
         },

@@ -6,7 +6,7 @@ import { useLoginUserMutation } from "../lib/services/reducers/userReducer";
 
 export default function SignInDialog({showSignIn, setShowSignIn}: {showSignIn: boolean, setShowSignIn: React.Dispatch<React.SetStateAction<boolean>>}){
   const [_loginUser, {isSuccess}] = useLoginUserMutation({
-    fixedCacheKey: "user:main"
+    fixedCacheKey: "user:login"
   })
   return <>
     <Dialog open={showSignIn} onClose={() => setShowSignIn(false)} aria-labelledby="customized-dialog-title">

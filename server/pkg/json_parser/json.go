@@ -13,8 +13,7 @@ func JsonResp(w http.ResponseWriter, statusCode int, payload interface{}) {
 		w.Write([]byte("Error converting data to JSON."))
 		return
 	}
-
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
 	w.Write(dat)

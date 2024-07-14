@@ -28,7 +28,6 @@ export default function SignInForm(){
                             <p>{error}</p>
                         </div>
                     })}
-                    {JSON.stringify(data)}
                     <form className='flex h-full flex-col gap-4 grow justify-center' onSubmit={handleSubmit(onSubmit)}>
                         <div className='mx-auto w-full'>
                             <TextField className="w-full" id="outlined-basic" label="Your Email" variant="outlined"  {...(errors.email?.message &&  {helperText: errors.email?.message, error: true})} {...register("email")}/>
