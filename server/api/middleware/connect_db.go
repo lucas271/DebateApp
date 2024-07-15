@@ -8,22 +8,26 @@ import (
 	"github.com/lucas271/DebateApp/internal/database"
 )
 
-func ConnectToDB() (apiCfg apiConfig, err error) {
+type ApiConfig struct {
+	DB *database.Queries
+}
+
+func ConnectToDB() (apiCfg ApiConfig, err error) {
 
 	DBUrl := os.Getenv("DB_URL")
 	if DBUrl == "" {
-		return apiConfig{}, errors.New("empty database URL")
+		return ApiConfig{}, errors.New("empty database URL")
 	}
 
 	conn, err := sql.Open("postgres", os.Getenv("DB_URL"))
 
 	if err != nil {
-		return apiConfig{}, errors.New(err.Error())
+		return ApiConfig{}, errors.New(err.Error())
 	}
 
 	queries := database.New(conn)
 
-	apiCfg = apiConfig{
+	apiCfg = ApiConfig{
 		DB: queries,
 	}
 
