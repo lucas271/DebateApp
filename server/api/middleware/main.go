@@ -8,6 +8,7 @@ import (
 )
 
 func MainMiddleware(mux *mux.Router) (handler http.Handler) {
+	//AUTH RULES
 	corsRules := cors.New(cors.Options{
 		AllowedOrigins: []string{
 			"http://localhost:5173",

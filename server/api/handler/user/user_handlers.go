@@ -1,4 +1,4 @@
-package routes_handler
+package user_handler
 
 import (
 	"database/sql"
@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	routes_handler "github.com/lucas271/DebateApp/api/handler"
 	"github.com/lucas271/DebateApp/api/middleware"
 	"github.com/lucas271/DebateApp/internal/database"
 	jsonparser "github.com/lucas271/DebateApp/pkg/json_parser"
@@ -34,7 +35,7 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request, apiCfg middleware.ApiCo
 
 	queryResp, _ := apiCfg.DB.GetAllUsers(r.Context())
 
-	jsonparser.JsonResp(w, 200, DefaultResp{
+	jsonparser.JsonResp(w, 200, routes_handler.DefaultResp{
 		Response:  queryResp,
 		IsSuccess: true,
 	})
@@ -69,7 +70,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request, apiCfg middleware.ApiConf
 		return
 	}
 
-	jsonparser.JsonResp(w, 200, DefaultResp{
+	jsonparser.JsonResp(w, 200, routes_handler.DefaultResp{
 		Response: userResp{
 			Email: queryResp.Email,
 			Name:  queryResp.Name,
@@ -131,7 +132,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request, apiCfg middleware.ApiCon
 		return
 	}
 
-	jsonparser.JsonResp(w, 200, DefaultResp{
+	jsonparser.JsonResp(w, 200, routes_handler.DefaultResp{
 		Response: userResp{
 			Email: queryResp.Email,
 			Name:  queryResp.Name,
