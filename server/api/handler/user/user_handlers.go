@@ -8,16 +8,23 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	routes_handler "github.com/lucas271/DebateApp/api/handler"
 	"github.com/lucas271/DebateApp/api/middleware"
 	"github.com/lucas271/DebateApp/internal/database"
-	jsonparser "github.com/lucas271/DebateApp/pkg/json_parser"
 	validations "github.com/lucas271/DebateApp/pkg/validations"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-type userResp struct {
+type UserResp struct {
+	data       userSentInfo
+	statusCode int
+}
+type UsersResp struct {
+	data       []userSentInfo
+	statusCode int
+}
+
+type userSentInfo struct {
 	Email string    `json:"email"`
 	Name  string    `json:"name"`
 	ID    uuid.UUID `json:"id"`
@@ -29,115 +36,117 @@ type userParams struct {
 	Name     string `json:"name"`
 }
 
-func GetAllUsers(w http.ResponseWriter, r *http.Request, apiCfg middleware.ApiConfig) {
-	queries := r.URL.Query()
+func (resp *UserResp) GetAllUsers(r *http.Request, apiCfg middleware.ApiConfig) (users UsersResp, err []error) {
+	queries := r.URL.Query() // this is not going to be used for now, might be used later on for pagination/filtering.
 	fmt.Printf("%v", queries)
 
-	queryResp, _ := apiCfg.DB.GetAllUsers(r.Context())
+	queryResp, queryErr := apiCfg.DB.GetAllUsers(r.Context())
 
-	jsonparser.JsonResp(w, 200, routes_handler.DefaultResp{
-		Response:  queryResp,
-		IsSuccess: true,
-	})
+	if queryErr != nil {
+		return UsersResp{data: []userSentInfo{}, statusCode: 500}, []error{errors.New("error fetching users data")}
+	}
+
+	for i := 0; i < len(queryResp); i++ {
+		// we will not be checking for empty fields RN.
+		users.data = append(users.data,
+			userSentInfo{
+				Email: queryResp[i].Email,
+				Name:  queryResp[i].Name,
+				ID:    queryResp[i].ID,
+			})
+	}
+
+	return UsersResp{
+		data:       users.data,
+		statusCode: 200,
+	}, nil //explicit declaration just to make things clearer
 }
 
-func LoginUser(w http.ResponseWriter, r *http.Request, apiCfg middleware.ApiConfig) {
+func (resp *UserResp) LoginUser(r *http.Request, apiCfg middleware.ApiConfig) (users UserResp, err []error) {
 	user := userParams{}
 
-	err := json.NewDecoder(r.Body).Decode(&user)
+	queryErr := json.NewDecoder(r.Body).Decode(&user)
 
-	if err != nil {
-		jsonparser.JsonErr(w, 400, []error{errors.New("invalid request")})
-		return
+	if queryErr != nil {
+		return UserResp{data: userSentInfo{}, statusCode: 400}, []error{errors.New("invalid request values")}
 	}
 
 	isValidPass := validations.ValidatePassword(user.Password)
 
 	if isValidPass != nil {
-		jsonparser.JsonErr(w, 400, isValidPass)
-		return
+		return UserResp{data: userSentInfo{}, statusCode: 400}, isValidPass
 	}
-	queryResp, err := apiCfg.DB.GetUser(r.Context(), user.Email)
+	queryResp, queryErr := apiCfg.DB.GetUser(r.Context(), user.Email)
 
-	if err != nil {
-		jsonparser.JsonErr(w, 400, []error{errors.New(err.Error())})
-		return
+	if queryErr != nil {
+		return UserResp{data: userSentInfo{}, statusCode: 400}, []error{errors.New(queryErr.Error())}
 	}
 
 	passwordErr := bcrypt.CompareHashAndPassword([]byte(queryResp.Password), []byte(user.Password))
 	if passwordErr != nil {
-		jsonparser.JsonErr(w, 400, []error{errors.New("password is not valid")})
-		return
+
+		return UserResp{data: userSentInfo{}, statusCode: 400}, []error{errors.New("password is not valid")}
 	}
 
-	jsonparser.JsonResp(w, 200, routes_handler.DefaultResp{
-		Response: userResp{
+	return UserResp{
+		data: userSentInfo{
 			Email: queryResp.Email,
 			Name:  queryResp.Name,
 			ID:    queryResp.ID,
 		},
-		IsSuccess: true,
-	})
+		statusCode: 200,
+	}, nil
 }
 
-func CreateUser(w http.ResponseWriter, r *http.Request, apiCfg middleware.ApiConfig) {
+func (resp *UserResp) CreateUser(r *http.Request, apiCfg middleware.ApiConfig) (users UserResp, err []error) {
 	//get info here
 	user := userParams{}
-	err := json.NewDecoder(r.Body).Decode(&user)
+	JSON_err := json.NewDecoder(r.Body).Decode(&user)
 
-	if err != nil {
-		jsonparser.JsonErr(w, 400, []error{errors.New("invalid request body")})
-		return
+	if JSON_err != nil {
+		return UserResp{data: userSentInfo{}, statusCode: 400}, []error{errors.New("invalid request body")}
 	}
 
 	isValidPassword := validations.ValidatePassword(user.Password)
 
 	if isValidPassword != nil {
-		jsonparser.JsonErr(w, 400, isValidPassword)
-		return
+		return UserResp{data: userSentInfo{}, statusCode: 400}, isValidPassword
 	}
 
-	isUser, err := apiCfg.DB.GetUser(r.Context(), user.Email)
+	isUser, queryErr := apiCfg.DB.GetUser(r.Context(), user.Email)
 
-	if err != nil {
-		if err == sql.ErrNoRows {
+	if queryErr != nil {
+		if queryErr == sql.ErrNoRows {
 			err = nil
 		} else {
-			jsonparser.JsonErr(w, 400, []error{errors.New("could not check user")})
-			return
+			return UserResp{data: userSentInfo{}, statusCode: 500}, []error{errors.New("sERVER ERROR")}
 		}
 	}
 
 	if isUser.Email == user.Email {
-		jsonparser.JsonErr(w, 400, []error{errors.New("email already registered")})
-		return
+		return UserResp{data: userSentInfo{}, statusCode: 400}, []error{errors.New("email already registered")}
 	}
 
 	hashedPassword, hashErr := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
 
 	if hashErr != nil {
-		jsonparser.JsonErr(w, 500, []error{errors.New("it was not possible to protect your password")})
-		return
+		return UserResp{data: userSentInfo{}, statusCode: 500}, []error{errors.New("it was not possible to protect your password, user not created")}
 	}
 
-	queryResp, err := apiCfg.DB.CreateUser(r.Context(), database.CreateUserParams{
+	queryResp, queryErr := apiCfg.DB.CreateUser(r.Context(), database.CreateUserParams{
 		Name:     user.Name,
 		Email:    user.Email,
 		Password: string(hashedPassword),
 	})
-	if err != nil {
-
-		println(err.Error())
-		jsonparser.JsonErr(w, 500, []error{errors.New("error creating user")})
-		return
+	if queryErr != nil {
+		return UserResp{data: userSentInfo{}, statusCode: 500}, []error{errors.New("error creating user")}
 	}
 
-	jsonparser.JsonResp(w, 200, routes_handler.DefaultResp{
-		Response: userResp{
+	return UserResp{
+		data: userSentInfo{
 			Email: queryResp.Email,
 			Name:  queryResp.Name,
 			ID:    queryResp.ID,
 		},
-		IsSuccess: true,
-	})
+	}, nil
 }

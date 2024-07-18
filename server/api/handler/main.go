@@ -17,8 +17,10 @@ type DefaultResp struct {
 
 func MainHandler(mux *mux.Router, apiCfg middleware.ApiConfig) {
 	//get
+	user := &user_handler.UserResp{}
+	users := &user_handler.UsersResp{}
 	mux.HandleFunc("/getAllUsers", func(w http.ResponseWriter, r *http.Request) {
-		user_handler.GetAllUsers(w, r, apiCfg)
+		users2, errussers := users.GetAllUsers(r)
 	}).Methods("GET")
 
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
@@ -30,9 +32,7 @@ func MainHandler(mux *mux.Router, apiCfg middleware.ApiConfig) {
 	})
 	//POST
 	mux.HandleFunc("/createUser", func(w http.ResponseWriter, r *http.Request) {
-		user_handler.CreateUser(w, r, apiCfg)
 	}).Methods("POST")
 	mux.HandleFunc("/loginUser", func(w http.ResponseWriter, r *http.Request) {
-		user_handler.LoginUser(w, r, apiCfg)
 	}).Methods("POST")
 }
