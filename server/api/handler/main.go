@@ -15,12 +15,24 @@ type DefaultResp struct {
 	IsSuccess bool `json:"isSuccess"`
 }
 
+// it might be cool to consider creating controllers and modules, but i'm pretty new to GOLANG folder structures so i'm just testing stuff.
 func MainHandler(mux *mux.Router, apiCfg middleware.ApiConfig) {
-	//get
-	user := &user_handler.UserResp{}
-	users := &user_handler.UsersResp{}
+	//get handlers instances
+
+	userInst := &user_handler.User{}
+	usersInst := &user_handler.Users{}
+
 	mux.HandleFunc("/getAllUsers", func(w http.ResponseWriter, r *http.Request) {
-		users2, errussers := users.GetAllUsers(r)
+		usersResp, handlerErr := usersInst.GetAllUsers(r, apiCfg)
+		if handlerErr != nil {
+			jsonparser.JsonErr(w, usersResp.StatusCode, handlerErr)
+			return
+		}
+
+		jsonparser.JsonResp(w, usersResp.StatusCode, DefaultResp{
+			Response:  usersResp.Data,
+			IsSuccess: true,
+		})
 	}).Methods("GET")
 
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +44,29 @@ func MainHandler(mux *mux.Router, apiCfg middleware.ApiConfig) {
 	})
 	//POST
 	mux.HandleFunc("/createUser", func(w http.ResponseWriter, r *http.Request) {
+		userResp, handlerErr := userInst.CreateUser(r, apiCfg)
+
+		if handlerErr != nil {
+			jsonparser.JsonErr(w, userResp.StatusCode, handlerErr)
+			return
+		}
+
+		jsonparser.JsonResp(w, userResp.StatusCode, DefaultResp{
+			Response:  userResp.Data,
+			IsSuccess: true,
+		})
+
 	}).Methods("POST")
 	mux.HandleFunc("/loginUser", func(w http.ResponseWriter, r *http.Request) {
+		userResp, handlerErr := userInst.LoginUser(r, apiCfg)
+		if handlerErr != nil {
+			jsonparser.JsonErr(w, userResp.StatusCode, handlerErr)
+			return
+		}
+
+		jsonparser.JsonResp(w, userResp.StatusCode, DefaultResp{
+			Response:  userResp.Data,
+			IsSuccess: true,
+		})
 	}).Methods("POST")
 }

@@ -1,4 +1,4 @@
-package routes_handler
+package auth_handler
 
 import (
 	"net/http"

@@ -1,4 +1,3 @@
-import { AnyListenerPredicate } from "@reduxjs/toolkit";
 import { SignInType, SignUpType } from "../../../types/auth";
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 

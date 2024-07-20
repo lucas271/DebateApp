@@ -89,7 +89,7 @@ const Search = styled('div')(({ theme } : {theme: any}) => ({
 
     return (
       <Box sx={{ flexGrow: 1 }} component={"header"}>
-        <AppBar position="static">
+        <AppBar position="fixed">
           <Toolbar className='flex justify-around'>
 
             <Typography

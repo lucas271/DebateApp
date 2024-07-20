@@ -7,32 +7,24 @@ import TopicsPage from './pages/TopicsPage'
 import { Button, Container } from '@mui/material'
 import CreateTopic from './pages/CreateTopic'
 import Topic from './pages/Topic'
+import Sidebar from './components/layout/Sidebar'
+import AuthRoutes from './AuthRoutes'
+import NoAuthRoutes from './NoAuthRoutes'
 
 const WithSidebar = () => {
 
     return <>
-        <Container maxWidth="xl" >
-            <div className='py-10 flex justify-between align-center gap-10 w-full overflow-hidden relative min-h-minus-nav'>
-                <main className='overflow-hidden w-full'>
+        <Container maxWidth="xl">
+            <div className='flex justify-between align-center gap-10 w-full  relative min-h-minus-nav'>
+                <main className='flex-shrink overflow-hidden flex-grow py-10'>
                     <Routes>
                         <Route path='/' element={<HomePage/>}/>
                         <Route path='/topics' element={<TopicsPage/>}/>
-                        <Route path='/topics/createNew' element={<CreateTopic/>}/>
+                        <Route path='/topics/createNew' element={<AuthRoutes Component={CreateTopic}/>}/>
                         <Route path='/topics/:title/:id' element={<Topic/>}/>
                     </Routes>
                 </main>
-                <aside className='h-3/4 w-64  relative hidden md:flex flex-col '>
-                    <header className='flex  justify-between items-center gap-2 px-1 border-2 py-1 border-blue-950  border-b-0'>
-                        <h3 className='text-sm text-gray-500 font-bold'>Recent Activity</h3>
-                        <Button variant="contained" size='small'>Pools</Button>
-
-                    </header>
-                    <ul className=' h-full flex-shrink w-64 bg-blue-950'>
-                        <li className='border border-b-2 p-2 h-[fit-content] border-blue-700 w-full relative'>
-                        <a className=' block w-full overflow-hidden text-ellipsis text-nowrap text-white '>fdosakfodfoakfldpdflpalfpdlapflapdfa foasdofkaokfoakdfokaofkaokofaksodfkodas</a>
-                        </li>
-                    </ul>
-                </aside>
+                <Sidebar/>
             </div>
         </Container>
     </>
@@ -43,12 +35,20 @@ const WithSidebar = () => {
 const RoutesComponent = () => {
     return <>
         <Router>
-            <Navbar/>
+            <div className='h-[79px]'>
+                <Navbar/>
+
+            </div>
             <Routes>
-                <Route path='/signUp' element={
-                    <main className='min-h-minus-nav overflow-x-hidden'>
-                        <SignUp/>
-                    </main>
+                <Route path='/signUp' element={ 
+                    <NoAuthRoutes Component={ 
+                        <>
+                            <main className='min-h-minus-nav overflow-x-hidden'>
+                                <SignUp/>
+                            </main>
+                        </>
+                    }/>
+
                 }/>
 
                 <Route path='*' element={<WithSidebar/>}/>
