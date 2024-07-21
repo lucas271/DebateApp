@@ -13,8 +13,11 @@ function ApiRequest(){
     const response = async () => await axios.get("http://localhost:37650/test", {
       withCredentials: true,
     }).then(res => {
+      console.log(res)
       localStorage.setItem("X-CSRF-Token", res.data.response)
-    }).catch(res => res)
+    }).catch(res => {
+      return res.response.data.errors
+    })
 
     response().then((res) => setFetchResponse(res))
   }, [])

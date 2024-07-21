@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lucas271/DebateApp/api/middleware"
 	"github.com/lucas271/DebateApp/internal/database"
+	internalJwt "github.com/lucas271/DebateApp/pkg/jwt"
 	validations "github.com/lucas271/DebateApp/pkg/validations"
 
 	"golang.org/x/crypto/bcrypt"
@@ -19,6 +20,7 @@ import (
 type User struct {
 	Data       userSentInfo
 	StatusCode int
+	Headers    string
 }
 type Users struct {
 	Data       []userSentInfo
@@ -92,6 +94,16 @@ func (resp *User) LoginUser(r *http.Request, apiCfg middleware.ApiConfig) (user 
 		return User{Data: userSentInfo{}, StatusCode: 400}, []error{errors.New("password is not valid")}
 	}
 
+	jwtToken, jwtErr := internalJwt.GenerateJWT(queryResp.ID.String())
+
+	fmt.Printf("%v pf;alspfalspflapsflpaslfpasl", queryResp.ID.String())
+
+	fmt.Printf("%v", jwtToken)
+
+	if jwtErr != nil {
+		return User{Data: userSentInfo{}, StatusCode: 500}, []error{errors.New("error generating auth tokens")}
+	}
+
 	return User{
 		Data: userSentInfo{
 			Email: queryResp.Email,
@@ -99,6 +111,7 @@ func (resp *User) LoginUser(r *http.Request, apiCfg middleware.ApiConfig) (user 
 			ID:    queryResp.ID,
 		},
 		StatusCode: 200,
+		Headers:    jwtToken,
 	}, nil
 }
 
@@ -146,6 +159,16 @@ func (resp *User) CreateUser(r *http.Request, apiCfg middleware.ApiConfig) (user
 		return User{Data: userSentInfo{}, StatusCode: 500}, []error{errors.New("error creating user")}
 	}
 
+	jwtToken, jwtErr := internalJwt.GenerateJWT(queryResp.ID.String())
+
+	fmt.Printf("%v pf;alspfalspflapsflpaslfpasl", queryResp.ID.String())
+
+	fmt.Printf("%v", jwtToken)
+
+	if jwtErr != nil {
+		return User{Data: userSentInfo{}, StatusCode: 500}, []error{errors.New("error generating auth tokens")}
+	}
+
 	return User{
 		Data: userSentInfo{
 			Email: queryResp.Email,
@@ -153,5 +176,6 @@ func (resp *User) CreateUser(r *http.Request, apiCfg middleware.ApiConfig) (user
 			ID:    queryResp.ID,
 		},
 		StatusCode: 200,
+		Headers:    jwtToken,
 	}, nil
 }

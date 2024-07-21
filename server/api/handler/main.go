@@ -1,6 +1,7 @@
 package routes_handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/csrf"
@@ -42,9 +43,23 @@ func MainHandler(mux *mux.Router, apiCfg middleware.ApiConfig) {
 			IsSuccess: true,
 		})
 	})
-	//POST
-	mux.HandleFunc("/createUser", func(w http.ResponseWriter, r *http.Request) {
-		userResp, handlerErr := userInst.CreateUser(r, apiCfg)
+
+	// subroutes
+	noAuthSubroute := mux.NewRoute().Subrouter()
+	authSubroute := mux.NewRoute().Subrouter()
+
+	authSubroute.Use(middleware.WithJWTauth)
+	noAuthSubroute.Use(middleware.WithOutJWTauth)
+
+	noAuthRoutes(noAuthSubroute, userInst, &apiCfg)
+}
+func authRoutes(authSubroute *mux.Router, userInst *user_handler.User, apiCfg *middleware.ApiConfig) {
+
+}
+
+func noAuthRoutes(noAuthSubroute *mux.Router, userInst *user_handler.User, apiCfg *middleware.ApiConfig) {
+	noAuthSubroute.HandleFunc("/createUser", func(w http.ResponseWriter, r *http.Request) {
+		userResp, handlerErr := userInst.CreateUser(r, *apiCfg)
 
 		if handlerErr != nil {
 			jsonparser.JsonErr(w, userResp.StatusCode, handlerErr)
@@ -57,13 +72,15 @@ func MainHandler(mux *mux.Router, apiCfg middleware.ApiConfig) {
 		})
 
 	}).Methods("POST")
-	mux.HandleFunc("/loginUser", func(w http.ResponseWriter, r *http.Request) {
-		userResp, handlerErr := userInst.LoginUser(r, apiCfg)
+	noAuthSubroute.HandleFunc("/loginUser", func(w http.ResponseWriter, r *http.Request) {
+		userResp, handlerErr := userInst.LoginUser(r, *apiCfg)
 		if handlerErr != nil {
 			jsonparser.JsonErr(w, userResp.StatusCode, handlerErr)
 			return
 		}
+		fmt.Printf("%v", userResp.Headers)
 
+		w.Header().Add("JWTtoken", userResp.Headers)
 		jsonparser.JsonResp(w, userResp.StatusCode, DefaultResp{
 			Response:  userResp.Data,
 			IsSuccess: true,

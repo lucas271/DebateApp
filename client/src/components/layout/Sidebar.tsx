@@ -46,9 +46,9 @@ function Posts(){
 export default function Sidebar(){
     const [isPool, setIsPool] = useState<boolean>(false)
 
-    return <aside className='h-minus-nav w-full min-w-52 md:w-3/4 lg:1/4 sticky top-0 left-0 right-0 sm:flex flex-col justify-center items-center  hidden overflow-hidden '>
-        <div className="h-5/6 w-full flex flex-col overflow-hidden ">
-            <header className='flex w-full overflow-hidden  justify-between items-center gap-2 px-1 border-2 py-1 border-blue-950  border-b-0'>
+    return <aside className='h-minus-nav w-full min-w-52 max-w-72 md:w-3/4 lg:1/4 sticky top-0 left-0 right-0 sm:flex flex-col justify-center items-center  hidden overflow-hidden '>
+        <div className="h-5/6 w-full flex flex-col overflow-hidden border-2 border-blue-950">
+            <header className='flex w-full overflow-hidden  justify-between items-center gap-2 px-1 border-2 py-1   border-b-0'>
                 <h3 className='text-sm text-gray-500 font-bold'>Recent Activity</h3>
                 <Button variant="contained" color={isPool ? "secondary" :"primary"} size='small' onClick={() => setIsPool(!isPool)}>{isPool ? "Talks" : "Pools"}</Button>
             </header>

@@ -18,7 +18,7 @@ export default function PasswordField({errors, register, registerName}: {errors?
     return <TextField
         className="w-full"
         placeholder="ex: roger"
-        type={showPassword ? "password" : "text"}
+        type={!showPassword ? "password" : "text"}
         id={registerName}
         {...(errors?.message &&  {helperText: errors?.message, error: true})}
         {...register(registerName)}

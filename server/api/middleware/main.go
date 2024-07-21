@@ -16,7 +16,16 @@ func MainMiddleware(mux *mux.Router) (handler http.Handler) {
 		AllowCredentials: true,
 		AllowedHeaders:   []string{"Content-Type", "X-CSRF-Token"},
 	})
+
 	handler = corsRules.Handler(mux)
 
 	return handler
+}
+
+func MainWAuth(mux *mux.Router) {
+	mux.Use(WithJWTauth)
+}
+
+func MainWOutAuth(mux *mux.Router) {
+	mux.Use(WithOutJWTauth)
 }
