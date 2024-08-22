@@ -14,8 +14,8 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import { Badge} from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
-import SignInDialog from '../signInDialog';
-import { useGetAllUsersQuery } from '../../lib/services/reducers/userReducer';
+import SignInDialog from '@/components/signInDialog';
+import { useGetAllUsersQuery } from '@/lib/services/reducers/userReducer';
 
 
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -82,7 +82,6 @@ const Search = styled('div')(({ theme } : {theme: any}) => ({
 
     React.useEffect(() => {
       setShowSignIn(false)
-      console.log(isLoading, error, data)
     }, [location])
 
 

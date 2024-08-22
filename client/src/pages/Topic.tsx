@@ -1,5 +1,5 @@
 import { Button, TextField } from "@mui/material";
-import MessageContainer from "../components/shared/MessageContainer";
+import MessageContainer from "@/components/shared/MessageContainer";
 
 export default function Topic(){
 

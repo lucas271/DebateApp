@@ -1,7 +1,5 @@
-import { Button, Container } from "@mui/material";
-import RelevantNews from "../components/shared/RelevantNews";
+import RelevantNews from "@/components/shared/RelevantNews";
 import { Suspense, useEffect, useState } from "react";
-import { Api } from "@mui/icons-material";
 import axios from "axios";
 
 

@@ -1,7 +1,6 @@
 import { Container, Divider, List, ListItem, ListItemText, ListItemIcon } from "@mui/material";
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
-import { Title } from "@mui/icons-material";
-import RelevantNews from "../components/shared/RelevantNews";
+import RelevantNews from "@/components/shared/RelevantNews";
 
 export default function TopicsPage(){
 
