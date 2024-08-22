@@ -1,7 +1,7 @@
 import { Container, Paper } from "@mui/material";
-import SignUpForm from "../components/forms/SignUpForm";
-import SuccessPlaceholder from "../components/shared/SuccessPlaceholder";
-import { useSignUpUserMutation } from "../lib/services/reducers/userReducer";
+import SignUpForm from "@/components/forms/SignUpForm";
+import SuccessPlaceholder from "@/components/shared/SuccessPlaceholder";
+import { useSignUpUserMutation } from "@/lib/services/reducers/userReducer";
 
 export default function SignUp(){
   const [_, {isSuccess}] = useSignUpUserMutation({

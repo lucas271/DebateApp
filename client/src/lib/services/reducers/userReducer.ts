@@ -1,12 +1,15 @@
-import { SignInType, SignUpType } from "../../../types/auth";
+import { SignInType, SignUpType } from "@/types/auth";
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 
+interface userInterface{
+  user: string
+}
 
 export const authApi = createApi({
     reducerPath: 'auth',
     baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:37650' }), // Replace with your actual API base URL
-    tagTypes: ["auth"],
+    tagTypes: ["auth", "users"],
     endpoints: (builder) => ({
       loginUser: builder.mutation<SignInType, SignInType>({
         query: (credentials) => ({
@@ -46,6 +49,26 @@ export const authApi = createApi({
           return error?.data?.errors
         },
       }),
+      getCvUser: builder.query<any, userInterface>({
+        query: (credentials) => ({
+          url: "validateUser",
+          method: "get",
+          query: JSON.stringify(credentials),
+          headers: { 'Content-Type': 'application/json'},
+        }),
+        providesTags: [{type: "auth", id: "main"}],
+        transformResponse: async (response: any, error: any) => {
+          if (!response) throw new Error;
+  
+          localStorage.setItem('user', JSON.stringify(response.response));
+          return response.response;
+        },
+        transformErrorResponse: (error: any) => {
+          if(!error?.data?.errors) return ["Unknown Error"]
+
+          return error?.data?.errors
+        },
+      }),
       getAllUsers: builder.query<any, any>({
         query: (credentials) => ({
           url: '/getAllUsers',
@@ -53,7 +76,7 @@ export const authApi = createApi({
           query: JSON.stringify(credentials),
           headers: { 'Content-Type': 'application/json'},
         }),
-        providesTags: [{ type: 'auth', id: 'main' }],
+        providesTags: [{ type: 'users', id: 'many' }],
         transformResponse: async (response: any, error: any) => {
           if (!response) throw new Error;
 
@@ -68,4 +91,4 @@ export const authApi = createApi({
     }),
 });
 
-export const {useLoginUserMutation, useSignUpUserMutation,  useGetAllUsersQuery} = authApi
+export const {useLoginUserMutation, useSignUpUserMutation,  useGetAllUsersQuery, useGetCvUserQuery} = authApi

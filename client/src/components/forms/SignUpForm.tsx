@@ -1,12 +1,9 @@
 import { Button, CircularProgress, Container, IconButton, InputAdornment, TextField } from "@mui/material"
-import { useState } from "react";
 import { SignUpType, signUpValidation } from "../../types/auth";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
-import PasswordField from "../shared/PasswordField";
-import { authApi, useSignUpUserMutation } from "../../lib/services/reducers/userReducer";
+import { useSignUpUserMutation } from "../../lib/services/reducers/userReducer";
+import PasswordField from "@/components/shared/PasswordField";
 
 
 export default function SignUpForm(){

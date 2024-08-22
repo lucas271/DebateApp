@@ -1,10 +1,8 @@
 import { Button } from "@mui/material";
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { useGetAllPostsQuery } from "../../lib/services/reducers/postReducer";
+import {  useState } from "react";
+import { Link } from "react-router-dom";
 
 function Pools(){
-    const location = useLocation()
     const urlPrefix = ""
     const poolTitles = [{
         id: "Doskaodaskda",

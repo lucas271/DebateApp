@@ -1,8 +1,9 @@
 import { Button, InputLabel, MenuItem, Paper, Select, TextField, TextareaAutosize } from "@mui/material";
+import { signUpValidation } from "@/types/auth";
 
 export default function CreateTopic(){
     const topics = ['politics', 'people', 'outdoors', 'daily life']
-
+    signUpValidation
     return <section className="w-full p-1">
         <h2 className="text-lg text-slate-400 font-semibold mb-4">
             Create new topic

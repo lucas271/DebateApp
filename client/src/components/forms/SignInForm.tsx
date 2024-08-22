@@ -1,22 +1,23 @@
 import { Button, CircularProgress, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material"
 import { Link } from "react-router-dom"
-import { SignInType, signInValidation } from "../../types/auth";
+import { SignInType, signInValidation } from "@/types/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import PasswordField from "../shared/PasswordField";
-import { useLoginUserMutation } from "../../lib/services/reducers/userReducer";
+import { useLoginUserMutation } from "@/lib/services/reducers/userReducer";
+import PasswordField from "@/components/shared/PasswordField";
+import { useTranslation } from 'react-i18next';
 
 export default function SignInForm(){
     const { register, handleSubmit, formState: { errors } } = useForm<SignInType>({
         resolver: zodResolver(signInValidation)
     });
-
     const [loginUser, {isLoading, data, error: apiErrors}] = useLoginUserMutation({
         fixedCacheKey: "user:login"
     })
     const onSubmit = async (data: SignInType): Promise<void> => {
         await loginUser(data)
     };
+    const { t } = useTranslation();
 
     return <>
         { !isLoading ? <> 
@@ -30,9 +31,11 @@ export default function SignInForm(){
                     })}
                     <form className='flex h-full flex-col gap-4 grow justify-center' onSubmit={handleSubmit(onSubmit)}>
                         <div className='mx-auto w-full'>
+                            <span>dsaodkasokdas</span>
                             <TextField className="w-full" id="outlined-basic" label="Your Email" variant="outlined"  {...(errors.email?.message &&  {helperText: errors.email?.message, error: true})} {...register("email")}/>
                         </div>
                         <div className="w-full">
+                            <span>{t("Welcome to React")}</span>
                             <PasswordField register={register} registerName="password" {...(errors.password?.message && {errors: {message: errors.password.message}})} />
                         </div>
 

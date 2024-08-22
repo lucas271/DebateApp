@@ -1,8 +1,7 @@
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { IconButton, InputAdornment, TextField } from "@mui/material";
 import { useState } from "react";
-import { FieldValues, UseFormRegister } from "react-hook-form";
-import { SignInType, SignUpType } from "../../types/auth";
+import {  UseFormRegister } from "react-hook-form";
 
 interface errorsInterface{
     message?: string
